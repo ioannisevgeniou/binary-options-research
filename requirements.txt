@@ -1,0 +1,14 @@
+pandas==*
+requests==*
+tenacity==*
+scikit-learn==*
+numpy==*
+pytest==*
+jupyter==*
+notebook==*
+autopep8==*
+pylint==*
+pytest-cov==*
+xgboost==*
+matplotlib==*
+seaborn==*
