@@ -1,10 +1,10 @@
-## Sysout view
+# Guide and Libraries
 
-`tail -f stdout -n 100`
+The environment used for this project is a conda environment with python 3.9.19. After the environment is created the libraries used need to be installed using the following commands. Also, since the outputs are long, the output is redirected to stdoutfile and its content can be viewed live through the terminal using `tail -f stdout -n 100`.
 
 ## Install from requirements.txt into conda virtual enviroment
 
-- `conda activate [python-version]`
+- `conda activate [env]`
 - `conda install --file requirements.txt`
 
 ## Install hyperopt

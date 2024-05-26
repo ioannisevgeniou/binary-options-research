@@ -26,11 +26,14 @@ class DoubleTopFinder:
 
         for i in range(end.name - 1, self.search_end, -1):
             candle = candles.iloc[i]
+
+            if is_red(candle) and candle["close"] < end["close"]:
+                return None
             if msb is None:
                 if (
-                    (reversal2 is None or candle["close"] > reversal2["close"])
-                    and is_green(candle)
-                    and candle["open"] > end["open"]
+                    is_green(candle)
+                    and candle["open"] > end["close"]
+                    and (reversal2 is None or candle["close"] > reversal2["close"])
                 ):
                     reversal2 = candle
 
@@ -38,27 +41,35 @@ class DoubleTopFinder:
                 if (
                     is_red(candle)
                     and candle["close"] > end["close"]
-                    and candle["open"] < reversal2["open"]
+                    and candle["open"] < reversal2["close"]
                     and (msb is None or candle["close"] < msb["close"])
+                    and reversal2.name - candle.name > 1
+                    and candle["close"]
+                    < candles.loc[
+                        candles.loc[candle.name + 1 : reversal2.name]["close"].idxmin()
+                    ]["close"]
                 ):
                     msb = candle
-
             if msb is not None:
                 if (
                     (reversal1 is None or candle["close"] > reversal1["close"])
                     and is_green(candle)
-                    and candle["open"] > reversal2["open"]
+                    and candle["open"] > msb["close"]
+                    and msb.name - candle.name > 1
                 ):
                     reversal1 = candle
 
             if (
                 reversal1 is not None
                 and is_green(candle)
-                and candle["open"] < reversal2["open"]
+                and candle["close"] < reversal1["close"]
                 and candle["open"] < msb["close"]
+                and candle["open"]
+                < candles.loc[
+                    candles.loc[candle.name + 1 : reversal1.name]["open"].idxmin()
+                ]["open"]
             ):
                 start = candle
-                self.search_end = reversal2.name
 
                 return DoubleExtreme(
                     PatternName.DOUBLE_TOP, start, reversal1, msb, reversal2, end

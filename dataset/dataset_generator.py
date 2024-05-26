@@ -21,7 +21,7 @@ def make(symbols, timeframe):
     `combine` and `individuals` can be used in any combination
     """
 
-    print("Creating dataset")
+    print("Creating dataset", flush=True)
     datasets = []
     start_year = 2020
     period_end = date.today() - relativedelta(months=1)
@@ -33,7 +33,7 @@ def make(symbols, timeframe):
             f"dataset/{symbol}-{timeframe}-{start_year}_{end_year}.csv"
         )
         if os.path.isfile(dataset_destination):
-            print(f"{dataset_destination} already exists")
+            print(f"{dataset_destination} already exists \n")
             continue
         print(f"Creating {symbol} {timeframe} dataset")
         pr = pd.period_range(
@@ -52,7 +52,9 @@ def make(symbols, timeframe):
             try:
                 if not os.path.isfile(monthly_dataset_destination_csv):
                     if not os.path.isfile(monthly_dataset_destination_zip):
-                        print(f"Downloading {monthly_dataset_destination_zip}")
+                        print(
+                            f"Downloading {monthly_dataset_destination_zip}", flush=True
+                        )
                         url = f"https://data.binance.vision/data/futures/um/monthly/klines/{symbol}/{timeframe}/{symbol}-{timeframe}-{year}-{month:02d}.zip"
                         urllib.request.urlretrieve(url, monthly_dataset_destination_zip)
 
@@ -94,7 +96,7 @@ def make(symbols, timeframe):
         df = df.drop(df[df["open_time"] == "open_time"].index).reset_index(drop=True)
 
         # Process dataset
-        print("Processing dataset...")
+        print("Processing dataset... \n", flush=True)
         initialiaze_dataset(df)
         if os.path.isfile(dataset_destination):
             print(f"{dataset_destination} already exists, aborting saving in csv")

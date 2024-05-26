@@ -14,7 +14,7 @@ def initialiaze_dataset(candles):
 
 def format_times(candles):
     candles[["open_time", "close_time"]] = candles[["open_time", "close_time"]].apply(
-        pd.to_datetime, unit="ms"
+        lambda col: pd.to_datetime(pd.to_numeric(col), unit="ms")
     )
 
 
@@ -280,7 +280,7 @@ def calculate_indicators(candles):
             f"PSARs_{indicators_tracker.PSAR['AF0']}_{indicators_tracker.PSAR['MAX_AF']}"
         ].fillna(0)
         candles["psar"] = (psar_long + psar_short).round(2)
-        candles["psar"].replace(0, np.nan, inplace=True)
+        candles.loc[:, "psar"] = candles["psar"].replace(0, np.nan)
 
     return candles
 
