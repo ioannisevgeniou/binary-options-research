@@ -5,6 +5,7 @@ import pandas_ta as ta
 from dataset import indicators_tracker
 
 
+# Function to prepare dataset
 def initialiaze_dataset(candles):
     format_times(candles)
     candles = format_dataset(candles)
@@ -12,12 +13,14 @@ def initialiaze_dataset(candles):
     return candles
 
 
+# Function to format times
 def format_times(candles):
     candles[["open_time", "close_time"]] = candles[["open_time", "close_time"]].apply(
         lambda col: pd.to_datetime(pd.to_numeric(col), unit="ms")
     )
 
 
+# Function to format dataset
 def format_dataset(candles):
     candles.open = candles.open.astype(float)
     candles.high = candles.high.astype(float)
@@ -102,16 +105,19 @@ def format_dataset(candles):
     return candles
 
 
+# Function to add ema column in dataset
 def create_ema_column(candles, name, length):
     if length:
         candles[name] = ta.ema(candles.close, length=length).round(2)
 
 
+# Function to add ma column in dataset
 def create_ma_column(candles, name, length):
     if length:
         candles[name] = ta.sma(candles.close, length=length, talib=True).round(2)
 
 
+# Function to calculate indicators
 def calculate_indicators(candles):
     create_ema_column(
         candles, "short_term_ema", indicators_tracker.EMA_LENGTHS["SHORT_TERM"]
@@ -254,11 +260,9 @@ def calculate_indicators(candles):
         candles["ichimoku_span_b"] = ichimoku[0][
             f"ISB_{indicators_tracker.ICHIMOKU['KIJUN']}"
         ].round(2)
-        # conversion line
         candles["ichimoku_tenkan"] = ichimoku[0][
             f"ITS_{indicators_tracker.ICHIMOKU['TENKAN']}"
         ].round(2)
-        # base line
         candles["ichimoku_kijun"] = ichimoku[0][
             f"IKS_{indicators_tracker.ICHIMOKU['KIJUN']}"
         ].round(2)
@@ -285,6 +289,7 @@ def calculate_indicators(candles):
     return candles
 
 
+# Auxilliary function to atr indicator
 def tr(data):
     data["previous_close"] = data["close"].shift(1)
     data["high-low"] = abs(data["high"] - data["low"])
@@ -296,6 +301,7 @@ def tr(data):
     return tr
 
 
+# Function for local maximum
 def local_maxima(data):
     data["next_close"] = data["close"].shift(-1)
     data["next_open"] = data["open"].shift(-1)
@@ -315,12 +321,14 @@ def local_maxima(data):
     return [local_maximum, local_minimum]
 
 
+# Function to calculate atr
 def atr(data, period):
     data["tr"] = tr(data)
     atr = data["tr"].rolling(period).mean()
     return atr
 
 
+# Function to calculate supertrends
 def supertrend(df, period=7, atr_multiplier=3):
     df = df.copy()
     hl2 = (df["high"] + df["low"]) / 2
@@ -357,7 +365,6 @@ def supertrend(df, period=7, atr_multiplier=3):
     supert = f"supert_{period}_{atr_multiplier}"
     in_uptrend = f"in_uptrend_{period}_{atr_multiplier}"
 
-    # Create supert column
     df[supert] = df.apply(
         lambda row: row.lowerband if row.in_uptrend else row.upperband, axis=1
     )
@@ -372,6 +379,7 @@ def supertrend(df, period=7, atr_multiplier=3):
     return df[[in_uptrend, upperband, lowerband, supert]]
 
 
+# Function to calculate supertrends
 def supertrends(df):
     hl2 = (df["high"] + df["low"]) / 2
 
@@ -428,6 +436,7 @@ def supertrends(df):
     return df
 
 
+# Function to calculate supertrends
 def supertrends_for_new_candle(df):
     hl2 = (df["high"] + df["low"]) / 2
 

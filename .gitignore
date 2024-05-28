@@ -1,4 +1,5 @@
 # Ignore
 *.csv
 *.pyc
+*.joblib
 stdout

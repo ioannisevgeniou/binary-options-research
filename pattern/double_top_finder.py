@@ -5,6 +5,8 @@ from dataset.candle_utils import is_green, is_red
 
 from .double_extreme import DoubleExtreme
 from .pattern_name import PatternName
+from joblib import load
+from modelling.model_caller import predict
 
 
 class DoubleTopFinder:
@@ -13,7 +15,7 @@ class DoubleTopFinder:
         self.search_end = 0
 
     def find_double_top(
-        self, candles: pd.DataFrame, current: pd.Series
+        self, candles: pd.DataFrame, current: pd.Series, extractor, logging
     ) -> Optional[DoubleExtreme]:
         end = current
         reversal2 = None
@@ -71,6 +73,23 @@ class DoubleTopFinder:
             ):
                 start = candle
 
-                return DoubleExtreme(
-                    PatternName.DOUBLE_TOP, start, reversal1, msb, reversal2, end
-                )
+                model = None
+                if logging:
+                    model = load("modelling/DTmodel.joblib")
+                else:
+                    extractor._extract_features(
+                        PatternName.DOUBLE_TOP.value,
+                        start,
+                        reversal1,
+                        msb,
+                        reversal2,
+                        end,
+                        1,
+                    )
+
+                if predict(model, start, reversal1, msb, reversal2, end, logging):
+                    return DoubleExtreme(
+                        PatternName.DOUBLE_TOP, start, reversal1, msb, reversal2, end
+                    )
+                else:
+                    return None

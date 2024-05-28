@@ -5,10 +5,7 @@ from talipp.indicators import ATR, RSI
 from talipp.ohlcv import OHLCVFactory
 from dataset.candle_utils import is_green
 
-# Set as None to not generate indicator
 EMA_LENGTHS = {
-    # Multitimeframe(mtf) EMA
-    # (higher timeframe) * (ema value) / (lower timeframe)
     "SHORT_TERM": 50,
     "MEDIUM_TERM": 200,
     "LONG_TERM": 800,
@@ -19,13 +16,14 @@ CMF_LENGTH = 20
 CCI_LENGTH = 30
 ADX_LENGTH = 14
 MA_LENGTHS = {"SHORT_TERM": 50, "MEDIUM_TERM": 200, "LONG_TERM": 800}
-STOCHRSI = {"LENGTH": 14, "RSI_LENGTH": 14, "K": 3, "D": 3}  # Set only this to None
-MACD = {"FAST": 12, "SLOW": 26, "SIGNAL": 9}  # Set only this to None
-BBANDS = {"LENGTH": 20, "STD": 2.0}  # Set only this to None
-ICHIMOKU = {"TENKAN": 9, "KIJUN": 26, "SENKOU": 52}  # Set only this to None
-PSAR = {"AF0": 0.02, "AF": 0.02, "MAX_AF": 0.2}  # Set only this to None
+STOCHRSI = {"LENGTH": 14, "RSI_LENGTH": 14, "K": 3, "D": 3}
+MACD = {"FAST": 12, "SLOW": 26, "SIGNAL": 9}
+BBANDS = {"LENGTH": 20, "STD": 2.0}
+ICHIMOKU = {"TENKAN": 9, "KIJUN": 26, "SENKOU": 52}
+PSAR = {"AF0": 0.02, "AF": 0.02, "MAX_AF": 0.2}
 
 
+# Class to create technical indicators
 class IndicatorsTracker:
     def __init__(self, candles) -> None:
         self.rsis = RSI(RSI_LENGTH, candles.close.tolist())

@@ -1,14 +1,20 @@
 from pattern.pattern_finder import PatternFinder
+from features.extractor import Extractor
 
 
+# Class for the bot
 class Bot:
+    # Initialization Function
     def __init__(self, candles, logging) -> None:
         self.candles = candles
         self.pattern_finder = PatternFinder()
         self.logging = logging
 
-    def _process_candle(self, new_candle):
-        pattern = self.pattern_finder.find_patterns(self.candles, new_candle)
+    # Function to handle each incoming candle
+    def _process_candle(self, new_candle, extractor):
+        pattern = self.pattern_finder.find_patterns(
+            self.candles, new_candle, extractor, self.logging
+        )
         if pattern:
             if pattern.pattern_name.value == "Double Bottom":
                 position = "long"
@@ -26,11 +32,12 @@ class Bot:
         else:
             return 0, None, None
 
+    # Iterate dataset to make trades and extract features
     def _pattern_features_service(self):
         if self.logging:
             print(f"Running forward testing \n")
         else:
-            print(f"Running data extraction \n")
+            print(f"Running data extraction... \n", flush=True)
 
         in_position = 0
         timespan = 0
@@ -39,11 +46,13 @@ class Bot:
         result = ""
         i = -1
 
+        extractor = Extractor()
+        results = []
         while i < len(self.candles) - 1:
             i += 1
             if not in_position:
                 in_position, entry, position = self._process_candle(
-                    self.candles.iloc[i]
+                    self.candles.iloc[i], extractor
                 )
                 timespan = 0
             if in_position:
@@ -77,5 +86,7 @@ class Bot:
                             flush=True,
                         )
 
+                    results.append(1 if result == "Trade won" else 0)
                     self.candles = self.candles[i + 1 :].reset_index(drop=True)
                     i = -1
+        extractor._save_features(results)

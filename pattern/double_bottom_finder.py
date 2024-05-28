@@ -2,9 +2,10 @@ from typing import Optional
 
 import pandas as pd
 from dataset.candle_utils import is_green, is_red
-
 from .double_extreme import DoubleExtreme
 from .pattern_name import PatternName
+from joblib import load
+from modelling.model_caller import predict
 
 
 class DoubleBottomFinder:
@@ -13,7 +14,7 @@ class DoubleBottomFinder:
         self.search_end = 0
 
     def find_double_bottom(
-        self, candles: pd.DataFrame, current: pd.Series
+        self, candles: pd.DataFrame, current: pd.Series, extractor, logging
     ) -> Optional[DoubleExtreme]:
         end = current
         reversal2 = None
@@ -71,6 +72,23 @@ class DoubleBottomFinder:
             ):
                 start = candle
 
-                return DoubleExtreme(
-                    PatternName.DOUBLE_BOTTOM, start, reversal1, msb, reversal2, end
-                )
+                model = None
+                if logging:
+                    model = load("modelling/DBmodel.joblib")
+                else:
+                    extractor._extract_features(
+                        PatternName.DOUBLE_BOTTOM.value,
+                        start,
+                        reversal1,
+                        msb,
+                        reversal2,
+                        end,
+                        1,
+                    )
+
+                if predict(model, start, reversal1, msb, reversal2, end, logging):
+                    return DoubleExtreme(
+                        PatternName.DOUBLE_BOTTOM, start, reversal1, msb, reversal2, end
+                    )
+                else:
+                    return None

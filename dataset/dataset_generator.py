@@ -10,17 +10,8 @@ import zipfile
 from dataset.data_utils import initialiaze_dataset
 
 
+# Function to create the dataset by pulling data from Binance
 def make(symbols, timeframe):
-    """
-    Parameters
-    ----------
-
-    `combine` : Whether to create a single dataset of all `symbols` together
-    `individuals` : Whether to create separate a dataset for each `symbol`
-
-    `combine` and `individuals` can be used in any combination
-    """
-
     print("Creating dataset", flush=True)
     datasets = []
     start_year = 2020
@@ -92,10 +83,7 @@ def make(symbols, timeframe):
                     f"Error {str(e)}, {year}-{month} does not exist on Binance, continuing"
                 )
 
-        # some candle had open_time as `open_time`, get rid of it
         df = df.drop(df[df["open_time"] == "open_time"].index).reset_index(drop=True)
-
-        # Process dataset
         print("Processing dataset... \n", flush=True)
         initialiaze_dataset(df)
         if os.path.isfile(dataset_destination):
