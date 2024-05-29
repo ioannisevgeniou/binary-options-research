@@ -36,6 +36,10 @@ class DoubleTopFinder:
                     is_green(candle)
                     and candle["open"] > end["close"]
                     and (reversal2 is None or candle["close"] > reversal2["close"])
+                    and candle["close"]
+                    > candles.loc[
+                        candles.loc[candle.name + 1 : end.name]["close"].idxmax()
+                    ]["close"]
                 ):
                     reversal2 = candle
 
@@ -58,6 +62,10 @@ class DoubleTopFinder:
                     and is_green(candle)
                     and candle["open"] > msb["close"]
                     and msb.name - candle.name > 1
+                    and candle["close"]
+                    > candles.loc[
+                        candles.loc[candle.name + 1 : msb.name]["close"].idxmax()
+                    ]["close"]
                 ):
                     reversal1 = candle
 
@@ -92,4 +100,5 @@ class DoubleTopFinder:
                         PatternName.DOUBLE_TOP, start, reversal1, msb, reversal2, end
                     )
                 else:
+                    print("Pattern rejected! \n")
                     return None

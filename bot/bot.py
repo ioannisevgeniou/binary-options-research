@@ -48,7 +48,7 @@ class Bot:
 
         extractor = Extractor()
         results = []
-        while i < len(self.candles) - 1:
+        while i < len(self.candles) - 11:
             i += 1
             if not in_position:
                 in_position, entry, position = self._process_candle(

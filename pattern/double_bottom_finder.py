@@ -35,6 +35,10 @@ class DoubleBottomFinder:
                     is_red(candle)
                     and candle["open"] < end["close"]
                     and (reversal2 is None or candle["close"] < reversal2["close"])
+                    and candle["close"]
+                    < candles.loc[
+                        candles.loc[candle.name + 1 : end.name]["close"].idxmin()
+                    ]["close"]
                 ):
                     reversal2 = candle
 
@@ -57,6 +61,10 @@ class DoubleBottomFinder:
                     and is_red(candle)
                     and candle["open"] < msb["close"]
                     and msb.name - candle.name > 1
+                    and candle["close"]
+                    < candles.loc[
+                        candles.loc[candle.name + 1 : msb.name]["close"].idxmin()
+                    ]["close"]
                 ):
                     reversal1 = candle
 
@@ -91,4 +99,5 @@ class DoubleBottomFinder:
                         PatternName.DOUBLE_BOTTOM, start, reversal1, msb, reversal2, end
                     )
                 else:
+                    print("Pattern rejected! \n")
                     return None

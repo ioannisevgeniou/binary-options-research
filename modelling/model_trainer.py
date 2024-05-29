@@ -97,7 +97,7 @@ def find_hyper_params(X_train, y_train, X_valid, y_valid):
         fn=objective,
         space=space,
         algo=tpe.suggest,
-        max_evals=10000,
+        max_evals=500,
         trials=Trials(),
     )
 
