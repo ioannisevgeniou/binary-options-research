@@ -8,7 +8,17 @@ def split_data(df):
     for col in df.select_dtypes(include="bool").columns:
         df[col] = df[col].astype(int)
 
-    X = df.drop(columns=["result", "pattern"])
+    X = df.drop(
+        columns=[
+            "result",
+            "pattern",
+            "open_time_start",
+            "open_time_reversal1",
+            "open_time_msb",
+            "open_time_reversal2",
+            "open_time_end",
+        ]
+    )
     y = df["result"]
 
     X_train, X_temp, y_train, y_temp = train_test_split(

@@ -41,16 +41,8 @@ class IndicatorsTracker:
         self.atrs_11 = ATR(11, ohlcv)
         self.atrs_10 = ATR(10, ohlcv)
 
-    # TODO: Add test
+    # Function to add technical indicators for each candle
     def calculate_indicators_for_new_candle(self, candles, new_candle, last_candle):
-        # WHY CUT THE DATAFRAME???
-        # Give less candles to improve speed???
-        # BUT ...
-        # For example: ATR 14 needs 14 candles(=length) to be calculated
-        # Giving only the last 14 candles results in wrong value
-        # Giving min the last 100 candles results in right value
-
-        # EMA 800 needs min 3500 last candles for right value
         last_3500 = candles.iloc[-3500:]
         new_candle.short_term_ema = self.calculate_ema_for_new_candle(
             last_3500, EMA_LENGTHS["SHORT_TERM"]
@@ -63,8 +55,6 @@ class IndicatorsTracker:
         )
 
         new_candle.rsi = self.calculate_rsi_for_new_candle(new_candle)
-
-        # ATR needs min 100 last candles for right value
         last_100 = candles.iloc[-100:]
         new_candle["atr"] = (
             ta.atr(last_100.high, last_100.low, last_100.close, length=ATR_LENGTH)
@@ -83,7 +73,6 @@ class IndicatorsTracker:
 
         self.supertrends_for_new_candle(new_candle, last_candle)
 
-        # CMF needs candles=length for right values
         last_20 = candles.iloc[-20:]
         new_candle["cmf"] = (
             ta.cmf(
@@ -96,16 +85,12 @@ class IndicatorsTracker:
             .round(2)
             .iloc[-1]
         )
-
-        # CCI needs candles=length for right values
         last_30 = candles.iloc[-30:]
         new_candle["cci"] = (
             ta.cci(last_30.high, last_30.low, last_30.close, length=CCI_LENGTH)
             .round(2)
             .iloc[-1]
         )
-
-        # ADX needs min 500 last candles for right value
         last_500 = candles.iloc[-500:]
         new_candle["adx"] = (
             ta.adx(last_500.high, last_500.low, last_500.close, length=ADX_LENGTH)[
@@ -114,8 +99,6 @@ class IndicatorsTracker:
             .round(2)
             .iloc[-1]
         )
-
-        # MA needs candles=length for right value
         last_1000 = candles.iloc[-1000:]
         new_candle.short_term_ma = self.calculate_ma_for_new_candle(
             last_1000, MA_LENGTHS["SHORT_TERM"]
@@ -126,8 +109,6 @@ class IndicatorsTracker:
         new_candle.long_term_ma = self.calculate_ma_for_new_candle(
             last_1000, MA_LENGTHS["LONG_TERM"]
         )
-
-        # STOCHRSI needs min 100 last candles for right value
         stochrsi = ta.stochrsi(
             last_100.close,
             length=STOCHRSI["LENGTH"],
@@ -149,8 +130,6 @@ class IndicatorsTracker:
             .round(2)
             .iloc[-1]
         )
-
-        # MACD needs min 100 last candles for right value
         macd = ta.macd(
             last_100.close, fast=MACD["FAST"], slow=MACD["SLOW"], signal=MACD["SIGNAL"]
         )
@@ -169,8 +148,6 @@ class IndicatorsTracker:
             .round(2)
             .iloc[-1]
         )
-
-        # BBANDS needs min 1000 last candles for right value
         bbands = ta.bbands(last_1000.close, length=BBANDS["LENGTH"])
         new_candle["bbands_lower"] = (
             bbands[f"BBL_{BBANDS['LENGTH']}_{BBANDS['STD']}"].round(2).iloc[-1]
@@ -187,8 +164,6 @@ class IndicatorsTracker:
         new_candle["bbands_percent"] = (
             bbands[f"BBP_{BBANDS['LENGTH']}_{BBANDS['STD']}"].round(2).iloc[-1]
         )
-
-        # ICHIMOKU needs min 1000 last candles for right value
         ichimoku = ta.ichimoku(
             last_1000.high,
             last_1000.low,
@@ -203,16 +178,12 @@ class IndicatorsTracker:
         new_candle["ichimoku_span_b"] = (
             ichimoku[0][f"ISB_{ICHIMOKU['KIJUN']}"].round(2).iloc[-1]
         )
-        # conversion line
         new_candle["ichimoku_tenkan"] = (
             ichimoku[0][f"ITS_{ICHIMOKU['TENKAN']}"].round(2).iloc[-1]
         )
-        # base line
         new_candle["ichimoku_kijun"] = (
             ichimoku[0][f"IKS_{ICHIMOKU['KIJUN']}"].round(2).iloc[-1]
         )
-
-        # PSAR needs min 4500 last candles for right value
         last_4500 = candles.iloc[-4500:]
         psar = ta.psar(
             last_4500.high,
@@ -228,6 +199,7 @@ class IndicatorsTracker:
 
         return new_candle
 
+    # Function to calculate if candle is local maximum
     def calculate_local_maxima_for_last_candle(self, candles, last_candle, new_candle):
         candles.loc[last_candle.name, "is_local_maximum"] = not is_green(
             new_candle
@@ -239,16 +211,20 @@ class IndicatorsTracker:
 
         return last_candle
 
+    # Function to calculate ema of candle
     def calculate_ema_for_new_candle(self, candles, period):
         return ta.ema(candles.close, length=period).round(2).iloc[-1]
 
+    # Function to calculate ma of candle
     def calculate_ma_for_new_candle(self, candles, period):
         return ta.sma(candles.close, length=period).round(2).iloc[-1]
 
+    # Function to calculate rsi of candle
     def calculate_rsi_for_new_candle(self, new_candle):
         self.rsis.add_input_value(new_candle.close)
         return round(self.rsis[-1], 2)
 
+    # Function to calculate atr of candle
     def calculate_atr_for_new_candle(self, new_candle, period):
         if period == 12:
             self.atrs_12.add_input_value(new_candle)
@@ -262,6 +238,7 @@ class IndicatorsTracker:
         else:
             raise ValueError()
 
+    # Auxilliary Function to calculate atr of candle
     def tr(self, data):
         data["previous_close"] = data["close"].shift(1)
         data["high-low"] = abs(data["high"] - data["low"])
@@ -272,6 +249,7 @@ class IndicatorsTracker:
 
         return tr
 
+    # Auxilliary Function to calculate atr of candle
     def tr_for_candle(self, candle, previous_candle):
         tr = max(
             abs(candle.high - candle.low),
@@ -280,6 +258,7 @@ class IndicatorsTracker:
         ).round(2)
         return tr
 
+    # Function to calculate atr of candle
     def atr_for_new_candle(self, new_candle, data, period):
         tr_sum = (
             data["tr"].loc[new_candle.name - period + 1 : new_candle.name].sum()
@@ -287,6 +266,7 @@ class IndicatorsTracker:
         )
         return (tr_sum / period).round(2)
 
+    # Function to calculate atr of candle
     def atr(self, data, period):
         copy = data.copy(deep=True)
         copy["tr"] = self.tr(copy)
@@ -294,6 +274,7 @@ class IndicatorsTracker:
 
         return atr
 
+    # Function to calculate supertrend of candle
     def supertrends_for_new_candle(self, new_candle, last_candle):
         atr_periods = [12, 11, 10]
         multipliers = [3, 2, 1]

@@ -30,7 +30,7 @@ def objective(space):
         reg_lambda=space["reg_lambda"],
         gamma=space["gamma"],
         eval_metric="error",
-        early_stopping_rounds=10,
+        early_stopping_rounds=100,
     )
 
     model.fit(
@@ -97,7 +97,7 @@ def find_hyper_params(X_train, y_train, X_valid, y_valid):
         fn=objective,
         space=space,
         algo=tpe.suggest,
-        max_evals=500,
+        max_evals=1000,
         trials=Trials(),
     )
 
@@ -178,7 +178,7 @@ def fit_model(X_train, y_train, X_valid, y_valid, X_test, y_test, hyper, pattern
         reg_lambda=space["reg_lambda"][hyper["reg_lambda"]],
         gamma=space["gamma"][hyper["gamma"]],
         eval_metric="error",
-        early_stopping_rounds=10,
+        early_stopping_rounds=100,
     )
 
     model.fit(

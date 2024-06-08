@@ -18,6 +18,17 @@ class Extractor:
     ):
         observation = {
             "pattern": pattern_name,
+            "open_time_start": start["open_time"],
+            "open_time_reversal1": reversal1["open_time"],
+            "open_time_msb": msb["open_time"],
+            "open_time_reversal2": reversal2["open_time"],
+            "open_time_end": end["open_time"],
+            "reversal_difference": abs(reversal1["close"] - reversal2["close"])
+            / ((reversal1["close"] + reversal2["close"]) / 2)
+            * 100,
+            "send_difference": abs(start["open"] - end["close"])
+            / ((start["open"] + end["close"]) / 2)
+            * 100,
             "ema_cross": (
                 end["short_term_ema"] > end["medium_term_ema"]
                 if pattern_name == "Double Bottom"
@@ -108,9 +119,24 @@ class Extractor:
             "short_super_start": short_supertrends_count(start),
             "short_super_msb": short_supertrends_count(msb),
             "short_super_end": short_supertrends_count(end),
+            "difference_body_start": abs(start["close"] - start["open"]),
+            "difference_body_reversal1": abs(reversal1["close"] - reversal1["open"]),
+            "difference_body_reversal2": abs(reversal2["close"] - reversal2["open"]),
+            "difference_body_msb": abs(msb["close"] - msb["open"]),
+            "difference_body_end": abs(end["close"] - end["open"]),
+            "difference_wick_start": abs(start["high"] - start["low"]),
+            "difference_wick_reversal1": abs(reversal1["high"] - reversal1["low"]),
+            "difference_wick_reversal2": abs(reversal2["high"] - reversal2["low"]),
+            "difference_wick_msb": abs(msb["high"] - msb["low"]),
+            "difference_wick_end": abs(end["high"] - end["low"]),
         }
 
         if extract:
             self.observations.append(observation)
         else:
+            del observation["open_time_start"]
+            del observation["open_time_reversal1"]
+            del observation["open_time_msb"]
+            del observation["open_time_reversal2"]
+            del observation["open_time_end"]
             return observation

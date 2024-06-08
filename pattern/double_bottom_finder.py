@@ -14,7 +14,12 @@ class DoubleBottomFinder:
         self.search_end = 0
 
     def find_double_bottom(
-        self, candles: pd.DataFrame, current: pd.Series, extractor, logging
+        self,
+        candles: pd.DataFrame,
+        current: pd.Series,
+        extractor,
+        logging,
+        model_db,
     ) -> Optional[DoubleExtreme]:
         end = current
         reversal2 = None
@@ -81,8 +86,8 @@ class DoubleBottomFinder:
                 start = candle
 
                 model = None
-                if logging:
-                    model = load("modelling/DBmodel.joblib")
+                if logging and model_db is not None:
+                    model = load("modelling/" + model_db + ".joblib")
                 else:
                     extractor._extract_features(
                         PatternName.DOUBLE_BOTTOM.value,

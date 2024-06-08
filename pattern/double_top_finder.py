@@ -15,7 +15,12 @@ class DoubleTopFinder:
         self.search_end = 0
 
     def find_double_top(
-        self, candles: pd.DataFrame, current: pd.Series, extractor, logging
+        self,
+        candles: pd.DataFrame,
+        current: pd.Series,
+        extractor,
+        logging,
+        model_dt,
     ) -> Optional[DoubleExtreme]:
         end = current
         reversal2 = None
@@ -82,8 +87,8 @@ class DoubleTopFinder:
                 start = candle
 
                 model = None
-                if logging:
-                    model = load("modelling/DTmodel.joblib")
+                if logging and model_dt is not None:
+                    model = load("modelling/" + model_dt + ".joblib")
                 else:
                     extractor._extract_features(
                         PatternName.DOUBLE_TOP.value,

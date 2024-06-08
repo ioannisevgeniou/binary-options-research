@@ -5,15 +5,22 @@ from features.extractor import Extractor
 # Class for the bot
 class Bot:
     # Initialization Function
-    def __init__(self, candles, logging) -> None:
+    def __init__(self, candles, logging, model_db, model_dt) -> None:
         self.candles = candles
         self.pattern_finder = PatternFinder()
         self.logging = logging
+        self.model_db = model_db
+        self.model_dt = model_dt
 
     # Function to handle each incoming candle
     def _process_candle(self, new_candle, extractor):
         pattern = self.pattern_finder.find_patterns(
-            self.candles, new_candle, extractor, self.logging
+            self.candles,
+            new_candle,
+            extractor,
+            self.logging,
+            self.model_db,
+            self.model_dt,
         )
         if pattern:
             if pattern.pattern_name.value == "Double Bottom":
@@ -33,7 +40,7 @@ class Bot:
             return 0, None, None
 
     # Iterate dataset to make trades and extract features
-    def _pattern_features_service(self):
+    def _pattern_features_service(self, time):
         if self.logging:
             print(f"Running forward testing \n")
         else:
@@ -48,15 +55,16 @@ class Bot:
 
         extractor = Extractor()
         results = []
-        while i < len(self.candles) - 11:
+        while i < len(self.candles) - 1:
             i += 1
             if not in_position:
-                in_position, entry, position = self._process_candle(
-                    self.candles.iloc[i], extractor
-                )
+                if i + time < len(self.candles):
+                    in_position, entry, position = self._process_candle(
+                        self.candles.iloc[i], extractor
+                    )
                 timespan = 0
             if in_position:
-                if timespan != 10:
+                if timespan != time:
                     timespan += 1
                 else:
                     in_position = 0
@@ -89,4 +97,5 @@ class Bot:
                     results.append(1 if result == "Trade won" else 0)
                     self.candles = self.candles[i + 1 :].reset_index(drop=True)
                     i = -1
-        extractor._save_features(results)
+        if not self.logging:
+            extractor._save_features(results)

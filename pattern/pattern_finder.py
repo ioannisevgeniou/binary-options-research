@@ -11,12 +11,22 @@ class PatternFinder:
         self.dt_finder = DoubleTopFinder()
 
     def find_patterns(
-        self, candles: pd.DataFrame, new_candle: pd.Series, extractor, logging
+        self,
+        candles: pd.DataFrame,
+        new_candle: pd.Series,
+        extractor,
+        logging,
+        model_db,
+        model_dt,
     ):
-        db = self.db_finder.find_double_bottom(candles, new_candle, extractor, logging)
+        db = self.db_finder.find_double_bottom(
+            candles, new_candle, extractor, logging, model_db
+        )
         if db:
             return db
 
-        dt = self.dt_finder.find_double_top(candles, new_candle, extractor, logging)
+        dt = self.dt_finder.find_double_top(
+            candles, new_candle, extractor, logging, model_dt
+        )
         if dt:
             return dt

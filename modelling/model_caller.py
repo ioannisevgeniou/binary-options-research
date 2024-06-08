@@ -5,7 +5,7 @@ from features.extractor import Extractor
 
 # Predict using the model
 def predict(clf, start, reversal1, msb, reversal2, end, logging):
-    if not logging:
+    if not logging or clf is None:
         return 1
 
     observation = Extractor()._extract_features(

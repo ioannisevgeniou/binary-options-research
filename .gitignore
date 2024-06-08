@@ -2,4 +2,7 @@
 *.csv
 *.pyc
 *.joblib
+
+results*
+
 stdout
