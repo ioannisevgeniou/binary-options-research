@@ -2,7 +2,7 @@ from pattern.pattern_finder import PatternFinder
 from features.extractor import Extractor
 
 
-# Class for the bot
+# Class for the bot for trading binary
 class Bot:
     # Initialization Function
     def __init__(self, candles, logging, model_db, model_dt) -> None:
