@@ -30,3 +30,7 @@ The environment used for this project is a conda environment with python 3.9.19.
 ## Install notebook
 
 - `conda install -c conda-forge notebook`
+
+## Install statsmodels
+
+- `conda install -c conda-forge statsmodels`
