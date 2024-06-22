@@ -1,0 +1,41 @@
+Without Machine Learning:
+Total trades: 3160
+Win rate: 47.53% 
+
+Double Bottom:
+Training Accuracy: 0.558
+Valid Accuracy: 0.603
+Testing Accuracy: 0.535
+Confusion Matrix:
+[[107  51]
+ [116  85]]
+Classification Statistics:
+              precision    recall  f1-score   support
+
+           0       0.48      0.68      0.56       158
+           1       0.62      0.42      0.50       201
+
+    accuracy                           0.53       359
+   macro avg       0.55      0.55      0.53       359
+weighted avg       0.56      0.53      0.53       359
+
+Double Top:
+Training Accuracy: 0.972
+Valid Accuracy: 0.606
+Testing Accuracy: 0.472
+Confusion Matrix:
+[[110  70]
+ [117  57]]
+Classification Statistics:
+              precision    recall  f1-score   support
+
+           0       0.48      0.61      0.54       180
+           1       0.45      0.33      0.38       174
+
+    accuracy                           0.47       354
+   macro avg       0.47      0.47      0.46       354
+weighted avg       0.47      0.47      0.46       354
+
+With Machine Learning:
+Total trades: 2143
+Win rate: 45.92% 
