@@ -4,7 +4,10 @@ from features.extractor import Extractor
 
 # Class for the bot for trading binary
 class Bot:
-    # Initialization Function
+    ''' 
+    Initialization Function for trading or data analysis. 
+    It is utilized to initialize the instance variables for the candlestick data, a pattern finder, logging, the database model, and the model_dt.
+    '''
     def __init__(self, candles, logging, model_db, model_dt) -> None:
         self.candles = candles
         self.pattern_finder = PatternFinder()
@@ -12,7 +15,25 @@ class Bot:
         self.model_db = model_db
         self.model_dt = model_dt
 
-    # Function to handle each incoming candle
+    '''
+    Process candlestick data one by one to check for trading patterns and execute trades.
+    _process_candle:
+       Args:
+          new_candle: A dictionary to hold data for a new candle.
+          extractor : Instantiate of Extractor class for extracting features.
+       Returns:
+          Tuple (signal, close_price, position) where:
+             - It returns the signal 1 if a pattern is detected; otherwise, 0.
+             - close_price: Closing price of a candlestick.
+             - position The trading position (long or short).
+    _pattern_features_service:
+        Args:
+            time: Forward testing period.
+        Does forward testing or does data extraction within the specified time interval.
+        Logs the trade details, open and close prices, results, number of trades, and win rate if logging is enabled.
+        Saves extracted features if the logging is disabled.
+
+    '''
     def _process_candle(self, new_candle, extractor):
         pattern = self.pattern_finder.find_patterns(
             self.candles,
