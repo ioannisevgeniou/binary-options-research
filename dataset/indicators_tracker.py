@@ -25,7 +25,22 @@ PSAR = {"AF0": 0.02, "AF": 0.02, "MAX_AF": 0.2}
 
 # Class to create technical indicators
 class IndicatorsTracker:
+    '''
+    Class for tracking & computing different technical indicators.
+
+    Attributes:
+        rsis: RSI object for computing the Relative Strength Index.
+        atrs_12: ATR object for computing Average True Range for the period of 12.
+        atrs_11: ATR object for computing Average True Range for the period of 11.
+        atrs_10: ATR object for computing Average True Range for the period of 10.
+    '''
     def __init__(self, candles) -> None:
+        '''
+        IndicatorsTracker initialized with the initial RSI and ATR values.
+
+        Args:
+            candles: OHLCV data contained DataFrame.
+        '''
         self.rsis = RSI(RSI_LENGTH, candles.close.tolist())
         ohlcv = OHLCVFactory.from_matrix2(
             [
@@ -43,6 +58,17 @@ class IndicatorsTracker:
 
     # Function to add technical indicators for each candle
     def calculate_indicators_for_new_candle(self, candles, new_candle, last_candle):
+        '''
+        For new candle compute & update the technical indicators.
+
+        Args:
+            candles: OHLCV data contained DataFrame.
+            new_candle: The new candle data updated with the indicators.
+            last_candle: Last candle information for the reference.
+
+        Returns:
+            Updated new_candle with indicators computed.
+        '''
         last_3500 = candles.iloc[-3500:]
         new_candle.short_term_ema = self.calculate_ema_for_new_candle(
             last_3500, EMA_LENGTHS["SHORT_TERM"]
@@ -201,6 +227,17 @@ class IndicatorsTracker:
 
     # Function to calculate if candle is local maximum
     def calculate_local_maxima_for_last_candle(self, candles, last_candle, new_candle):
+        '''
+        Compute whether last candle is local max/min.
+
+        Args:
+            candles: OHLCV data contained DataFrame.
+            last_candle: Last candle information for the reference.
+            new_candle: Information of new candle.
+
+        Returns:
+            Local max/min flags updated last_candle.
+        '''
         candles.loc[last_candle.name, "is_local_maximum"] = not is_green(
             new_candle
         ) and is_green(last_candle)
@@ -213,19 +250,41 @@ class IndicatorsTracker:
 
     # Function to calculate ema of candle
     def calculate_ema_for_new_candle(self, candles, period):
+        '''
+        EMA computation.
+        '''
         return ta.ema(candles.close, length=period).round(2).iloc[-1]
 
     # Function to calculate ma of candle
     def calculate_ma_for_new_candle(self, candles, period):
+        '''
+        MA computation.
+        '''
         return ta.sma(candles.close, length=period).round(2).iloc[-1]
 
     # Function to calculate rsi of candle
     def calculate_rsi_for_new_candle(self, new_candle):
+        '''
+        RSI computation for the new candle.
+        '''
         self.rsis.add_input_value(new_candle.close)
         return round(self.rsis[-1], 2)
 
     # Function to calculate atr of candle
     def calculate_atr_for_new_candle(self, new_candle, period):
+         """
+         For a new candle, given a specified period, computing & then returning the ATR.
+
+         Args:
+            new_candle: New candle information required to be included for the ATR calculation.
+            period: ATR computation period.
+
+        Returns:
+            float: The recent computed ATR value for period specified.
+
+        Raises:
+            ValueError: Flags if period unsupported.
+        """
         if period == 12:
             self.atrs_12.add_input_value(new_candle)
             return self.atrs_12[-1]
@@ -240,6 +299,15 @@ class IndicatorsTracker:
 
     # Auxilliary Function to calculate atr of candle
     def tr(self, data):
+        """
+        For the DataFrame computes the TR for every point in the data.
+
+        Args:
+            data (pd.DataFrame):'high', 'low', and 'close' contained DataFrame.
+
+        Returns:
+            pd.Series: For TR values for the DataFrame provided as input.
+        """
         data["previous_close"] = data["close"].shift(1)
         data["high-low"] = abs(data["high"] - data["low"])
         data["high-pc"] = abs(data["high"] - data["previous_close"])
@@ -251,6 +319,9 @@ class IndicatorsTracker:
 
     # Auxilliary Function to calculate atr of candle
     def tr_for_candle(self, candle, previous_candle):
+        """
+        high, low, and close prices information for a previous and present candle is utilized to compute TR.
+        """
         tr = max(
             abs(candle.high - candle.low),
             abs(candle.high - previous_candle.close),
@@ -260,6 +331,9 @@ class IndicatorsTracker:
 
     # Function to calculate atr of candle
     def atr_for_new_candle(self, new_candle, data, period):
+        """
+        New candle ATR computation given a specified period and relevent past TR values.
+        """
         tr_sum = (
             data["tr"].loc[new_candle.name - period + 1 : new_candle.name].sum()
             + new_candle["tr"]
@@ -268,6 +342,9 @@ class IndicatorsTracker:
 
     # Function to calculate atr of candle
     def atr(self, data, period):
+        """
+        ATR computation given a specified period and relevent past TR values.
+        """
         copy = data.copy(deep=True)
         copy["tr"] = self.tr(copy)
         atr = copy["tr"].rolling(period).mean()
@@ -276,6 +353,25 @@ class IndicatorsTracker:
 
     # Function to calculate supertrend of candle
     def supertrends_for_new_candle(self, new_candle, last_candle):
+        '''
+        New candle supertrend indicators computation.
+    
+        Parameters:
+        - new_candle: 'high', 'low', 'close', & ATR values dict.
+        - last_candle: 'high', 'low', 'close', & the previous supertrend values dict.
+    
+        Process:
+        1. Define the multipliers and the periods for ATR.
+        2. Iterate each period & the multiplier.
+        3. For new candle caculate the HL2, upperband, & the lowerband.
+        4. Based on the previous bands and the close price determine the in_uptrend status.
+        5. Adjust bands if meeting the pre-requisites.
+        6. Setting the supertrend value depending on in_uptrend.
+    
+        Returns:
+        - new_candle: Supertrend values updated.
+        '''
+        
         atr_periods = [12, 11, 10]
         multipliers = [3, 2, 1]
 

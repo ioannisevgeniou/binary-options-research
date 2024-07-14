@@ -6,6 +6,17 @@ from dataset import indicators_tracker
 
 
 # Function to prepare dataset
+
+'''
+Initialize the dataset with formatting times, formatting dataset, & computing indicators.
+initialiaze_dataset:
+    Args:
+       candles:candlestick data contained in DataFrame.
+
+    Returns:
+       DataFrame comprising the additional computed indicators.
+'''
+
 def initialiaze_dataset(candles):
     format_times(candles)
     candles = format_dataset(candles)
@@ -14,6 +25,18 @@ def initialiaze_dataset(candles):
 
 
 # Function to format times
+
+'''
+Convert 'open_time' & the 'close_time' columns within dataset to a datetime format.
+
+format_times:
+    Args:
+       candles:candlestick data with the time columns (in milliseconds) contained in the DataFrame.
+
+    Returns:
+       None
+'''
+
 def format_times(candles):
     candles[["open_time", "close_time"]] = candles[["open_time", "close_time"]].apply(
         lambda col: pd.to_datetime(pd.to_numeric(col), unit="ms")
@@ -21,6 +44,18 @@ def format_times(candles):
 
 
 # Function to format dataset
+
+'''
+Convert the dataset columns to float & initialize the indicator columns to 'None'.
+
+format_dataset:
+    Args:
+       candles: Candlestick data contained in DataFrame.
+
+    Returns:
+       DataFrame with formatted columns & with the initialized columns for indicators.
+'''
+
 def format_dataset(candles):
     candles.open = candles.open.astype(float)
     candles.high = candles.high.astype(float)
@@ -106,18 +141,58 @@ def format_dataset(candles):
 
 
 # Function to add ema column in dataset
+
+'''
+Add dataset with EMA column.
+
+create_ema_column:
+    Args:
+       candles: candlestick data contained DataFrame.
+       name: Name of EMA column.
+       length: Period length needed to compute the EMA.
+
+    Returns:
+       None
+'''
+
 def create_ema_column(candles, name, length):
     if length:
         candles[name] = ta.ema(candles.close, length=length).round(2)
 
 
 # Function to add ma column in dataset
+'''
+Add dataset with MA column.
+
+create_ma_column:
+    Args:
+       candles: candlestick data contained DataFrame.
+       name: Name of MA column.
+       length: Period length needed to compute the MA.
+
+    Returns:
+       None
+'''
+
+
 def create_ma_column(candles, name, length):
     if length:
         candles[name] = ta.sma(candles.close, length=length, talib=True).round(2)
 
 
 # Function to calculate indicators
+
+'''
+Compute the technical indicators & include them in dataset.
+
+calculate_indicators:
+    Args:
+       candles:candlestick data contained DataFrame.
+
+    Returns:
+       DataFrame with computed indicators.
+'''
+
 def calculate_indicators(candles):
     create_ema_column(
         candles, "short_term_ema", indicators_tracker.EMA_LENGTHS["SHORT_TERM"]
@@ -290,6 +365,18 @@ def calculate_indicators(candles):
 
 
 # Auxilliary function to atr indicator
+
+'''
+True Range (TR) computed for each candlestick.
+
+tr:
+    Args:
+       candles:candlestick data contained DataFrame.
+
+    Returns:
+       Series having True Range for each of the candlestick.
+'''
+
 def tr(data):
     data["previous_close"] = data["close"].shift(1)
     data["high-low"] = abs(data["high"] - data["low"])
@@ -302,6 +389,18 @@ def tr(data):
 
 
 # Function for local maximum
+
+'''
+For the candlestick data recognize the local maxima & the local minima.
+
+local_maxima:
+    Args:
+       candles: candlestick data contained DataFrame.
+
+    Returns:
+       Series tuple depicting the local maxima & the minima.
+'''
+
 def local_maxima(data):
     data["next_close"] = data["close"].shift(-1)
     data["next_open"] = data["open"].shift(-1)
@@ -322,6 +421,19 @@ def local_maxima(data):
 
 
 # Function to calculate atr
+'''
+Average True Range (ATR) computed for period specified.
+
+atr:
+    Args:
+       candles:candlestick data contained DataFrame.
+       length: Period length needed to compute the ATR.
+
+    Returns:
+       Series having ATR for each of the candlestick.
+'''
+
+
 def atr(data, period):
     data["tr"] = tr(data)
     atr = data["tr"].rolling(period).mean()
@@ -329,6 +441,20 @@ def atr(data, period):
 
 
 # Function to calculate supertrends
+
+'''
+Compute supertrend indicator for the given ATR length & the multiplier.
+
+supertrend:
+    Args:
+       candles:candlestick data contained DataFrame.
+       atr_length: Period length needed to compute ATR.
+       atr_multiplier: Multiplier for ATR for determining bands.
+
+    Returns:
+       Series tuple depicting the supertrend status, upperband, lowerband, & also the hl2 values.
+'''
+
 def supertrend(df, period=7, atr_multiplier=3):
     df = df.copy()
     hl2 = (df["high"] + df["low"]) / 2
@@ -380,6 +506,18 @@ def supertrend(df, period=7, atr_multiplier=3):
 
 
 # Function to calculate supertrends
+
+'''
+Compute the supertrend indicators for various period & the multiplier combinations.
+
+supertrends:
+    Args:
+       candles:candlestick data contained DataFrame.
+
+    Returns:
+       None
+'''
+
 def supertrends(df):
     hl2 = (df["high"] + df["low"]) / 2
 
@@ -437,6 +575,17 @@ def supertrends(df):
 
 
 # Function to calculate supertrends
+
+'''
+Compute the supertrend indicators for the new candlestick inside DataFrame.
+
+supertrends_for_new_candle:
+    Args:
+        df: candlestick data contained DataFrame.
+
+    Returns:
+        DataFrame with computed supertrend indicators.
+'''
 def supertrends_for_new_candle(df):
     hl2 = (df["high"] + df["low"]) / 2
 

@@ -11,6 +11,19 @@ from dataset.data_utils import initialiaze_dataset
 
 
 # Function to create the dataset by pulling data from Binance
+
+'''
+Generate dataset for the provided symbols & the timeframe.
+
+make:
+    Args:
+       symbols: List of symbols (for which dataset would be created).
+       timeframe: data's timeframe (e.g., '1d', '1h').
+
+    Returns:
+       List of DataFrames for created datasets.
+'''
+
 def make(symbols, timeframe):
     print("Creating dataset", flush=True)
     datasets = []
