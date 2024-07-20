@@ -5,6 +5,22 @@ from features.extractor import Extractor
 
 # Predict using the model
 def predict(clf, start, reversal1, msb, reversal2, end, logging):
+    """
+    Uses features to make a prediction with the classifier.
+
+    Args:
+        clf (Classifier): A trained classifier to make the predictions.
+        start (float): Observation start time.
+        reversal1 (float): Observation first reversal time.
+        msb (float): Observation MSB value.
+        reversal2 (float): Observation second reversal time.
+        end (float): Observation end time.
+        logging (bool): Logging enabled via flagging.
+
+    Returns:
+        int: Result predicted (as 1 or 0).
+
+    """
     if not logging or clf is None:
         return 1
 

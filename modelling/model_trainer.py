@@ -10,6 +10,16 @@ np.random.seed(42)
 
 # Exhaustive hyper boosting
 def objective(space):
+    """
+    Defines and trains an XGBoost classifier using hyper-parameters and 
+    evaluates it on the validation set.
+
+    Args:
+        space (dict): hyperparameters and data containing dict for training and validation.
+
+    Returns:
+        dict: negative accuracy loss and status containing dict.
+    """
     model = xgb.XGBClassifier(
         n_jobs=-1,
         random_state=42,
@@ -48,6 +58,16 @@ def objective(space):
 
 # Find hyper params of model
 def find_hyper_params(X_train, y_train, X_valid, y_valid):
+    """
+    This function returns the best hyper-parameters for the XGBoost
+    from given training and the validation data using Hyperopt.
+
+    Args:
+    - X_train: contain data for training features.
+    - y_train: contain data for training targets.
+    - X_valid: containdata for validation features.
+    - y_valid: contain data for validation target.
+    """
 
     space = {
         "base_score": hp.choice(
@@ -107,6 +127,21 @@ def find_hyper_params(X_train, y_train, X_valid, y_valid):
 
 # Train the model with hyper params
 def fit_model(X_train, y_train, X_valid, y_valid, X_test, y_test, hyper, pattern):
+    """
+    This function fits XGBoost on given training using relevent hyperparameters, 
+    then evaluates model prior saving that to a file.
+
+
+    Args:
+    - X_train: contain data for training features.
+    - y_train: contain data for training target.
+    - X_valid: contain data for validation features
+    - y_valid: contain data for validation target.
+    - X_test: contain data for test features.
+    - y_test: contain data for test target
+    - hyper: hyperparameters dict
+    - pattern: String pattern for using filename while model is saved.
+    """
     space = {
         "base_score": [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95],
         "scale_pos_weight": [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1],
@@ -198,6 +233,18 @@ def fit_model(X_train, y_train, X_valid, y_valid, X_test, y_test, hyper, pattern
 
 # Get some fit statistics
 def statistics(X_train, y_train, X_valid, y_valid, X_test, y_test, model):
+    """
+    Compute and print different essential performance metrics.
+
+    Args:
+    - X_train: contain data for training features.
+    - y_train: contain data for training target.
+    - X_valid: contain data for validation features.
+    - y_valid: contain data for validation target.
+    - X_test: contain data for test features.
+    - y_test: contain data for test target.
+    - model: Trained model.
+    """
     train_accuracy = model.score(X_train, y_train)
 
     y_pred = model.predict(X_valid)
