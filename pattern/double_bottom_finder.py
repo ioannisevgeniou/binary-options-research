@@ -9,6 +9,20 @@ from modelling.model_caller import predict
 
 
 class DoubleBottomFinder:
+    """
+    Recognize the pattern (double bottom) within candlestick information series. 
+
+    Args:
+        candles (pd.DataFrame): candlestick data contained dataframe.
+        current (pd.Series): The latest candlestick being examined.
+        extractor: object for feature extraction within pattern recognized.
+        logging (bool): flag depicting whether to go ahead with logging process.
+        model_db (str): model database name needed for prediction.
+
+    Returns:
+        Optional[DoubleExtreme]: DoubleExtreme object is returned that represent valid pattern, 
+        else the None is returned.
+    """
 
     def __init__(self) -> None:
         self.search_end = 0
