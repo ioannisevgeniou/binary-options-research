@@ -3,15 +3,29 @@ from dataset.candle_utils import long_supertrends_count, short_supertrends_count
 
 
 class Extractor:
+    """
+    Create an empty list of observations.
+    """
 
     def __init__(self) -> None:
         self.observations = []
+
+    """
+    Save the extracted features along with the results in a file called "features.csv".
+    Change observations to a DataFrame, and then add the results as another column.
+    Save the DataFrame to the CSV file without its index.
+    """
 
     def _save_features(self, results):
         df = pd.DataFrame(self.observations)
         df["result"] = results
 
         df.to_csv("features/features.csv", index=False)
+
+    """
+    Use candlestick patterns to extract features into an observation dictionary.
+    If 'extract' is True, then it stores the observation; otherwise, it prepares for return without time-related fields.
+    """
 
     def _extract_features(
         self, pattern_name, start, reversal1, msb, reversal2, end, extract

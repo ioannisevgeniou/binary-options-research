@@ -3,7 +3,24 @@ import numpy as np
 from features.extractor import Extractor
 
 
-# Predict using the model
+"""
+    Uses features to make a prediction with the classifier.
+
+    Args:
+        clf (Classifier): A trained classifier to make the predictions.
+        start (float): Observation start candle.
+        reversal1 (float): Observation first reversal candle.
+        msb (float): Observation MSB candle.
+        reversal2 (float): Observation second reversal candle.
+        end (float): Observation end candle.
+        logging (bool): Logging enabled via flagging.
+
+    Returns:
+        int: Result predicted (as 1 or 0).
+
+"""
+
+
 def predict(clf, start, reversal1, msb, reversal2, end, logging):
     if not logging or clf is None:
         return 1

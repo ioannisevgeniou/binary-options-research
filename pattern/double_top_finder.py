@@ -8,6 +8,21 @@ from .pattern_name import PatternName
 from joblib import load
 from modelling.model_caller import predict
 
+"""
+    Recognize the pattern (double top) within candlestick information series. 
+
+    Args:
+        candles (pd.DataFrame): candlestick data contained dataframe.
+        current (pd.Series): The latest candlestick being examined.
+        extractor: object for feature extraction within pattern recognized.
+        logging (bool): flag depicting whether to go ahead with logging process.
+        model_db (str): model name needed for prediction.
+
+    Returns:
+        Optional[DoubleExtreme]: DoubleExtreme object is returned that represent valid pattern, 
+        else the None is returned.
+"""
+
 
 class DoubleTopFinder:
 

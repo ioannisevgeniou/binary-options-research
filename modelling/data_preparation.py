@@ -1,6 +1,17 @@
 from sklearn.model_selection import train_test_split
 from numpy import loadtxt, savetxt
 
+"""
+    Conducting data preprocessing and splitting using the inputted dataframe.
+
+    Args:
+        df (DataFrame): Dataframe that is being inputted for processing.
+
+    Returns:
+        tuple: Six elements - X_train, y_train, X_valid, y_valid, X_test, y_test.
+
+"""
+
 
 def split_data(df):
     df = df.dropna().reset_index(drop=True)
@@ -31,7 +42,20 @@ def split_data(df):
     return X_train, y_train, X_valid, y_valid, X_test, y_test
 
 
-# Save training, validation data
+"""
+    The datasets viz; the training, the validation, and the test are being saved into the CSV files.
+
+    Args:
+        X_train : The DataFrame exhibiting the training features.
+        y_train : The series exhibiting the training targets.
+        X_valid : The DataFrame exhibiting the validation features.
+        y_valid : The series exhibiting the validation targets.
+        X_test  : The dataframe exhibiting the test features.
+        y_test  : The series exhibiting the test targets.
+
+"""
+
+
 def save_data(X_train, y_train, X_valid, y_valid, X_test, y_test):
     savetxt("modelling/X_train.csv", X_train, delimiter=",", fmt="%.3f")
     savetxt("modelling/y_train.csv", y_train, delimiter=",", fmt="%i")
@@ -41,7 +65,14 @@ def save_data(X_train, y_train, X_valid, y_valid, X_test, y_test):
     savetxt("modelling/y_test.csv", y_test, delimiter=",", fmt="%i")
 
 
-# Load training, validation data
+"""
+    The datasets viz; the training, the validation and the test are being loaded from the CSV.
+
+    Returns:
+        tuple: Six elements - X_train, y_train, X_valid, y_valid, X_test, y_test.
+"""
+
+
 def load_data():
     X_train = loadtxt("modelling/X_train.csv", delimiter=",")
     y_train = loadtxt("modelling/y_train.csv", delimiter=",")

@@ -1,5 +1,20 @@
 from .pattern_name import PatternName
 
+"""
+    Double extreme pattern represented, like the double bottom or the double top type, within data of candlestick.
+
+    Args:
+        pattern_name (PatternName): identified pattern's name.
+        start: candlestick wherein patterns commence.
+        reversal1: 1st reversal spot within pattern.
+        msb: middle important spot in between consecutive reversals.
+        reversal2: 2nd reversal spot within pattern.
+        end: candlestick wherein patterns ends.
+
+    Returns:
+        None
+"""
+
 
 class DoubleExtreme:
 

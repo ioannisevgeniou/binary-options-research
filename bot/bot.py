@@ -2,9 +2,13 @@ from pattern.pattern_finder import PatternFinder
 from features.extractor import Extractor
 
 
-# Class for the bot
+# Class of the bot for binary options trading
 class Bot:
-    # Initialization Function
+    """
+    Initialization Function of the bot.
+    It is utilized to initialize the instance variables for the candlestick data, pattern finder, logging, and Double Bottom / Double Top models.
+    """
+
     def __init__(self, candles, logging, model_db, model_dt) -> None:
         self.candles = candles
         self.pattern_finder = PatternFinder()
@@ -12,7 +16,26 @@ class Bot:
         self.model_db = model_db
         self.model_dt = model_dt
 
-    # Function to handle each incoming candle
+    """
+    Process candlestick data one by one to check for trading patterns and execute trades.
+    _process_candle:
+       Args:
+          new_candle: A dictionary to hold data for a new candle.
+          extractor : Extractor class for extracting features.
+       Returns:
+          Tuple (signal, close_price, position) where:
+             - It returns the signal 1 if a pattern is detected; otherwise, 0.
+             - close_price: Closing price of the entry candlestick.
+             - position: The trading position (long or short).
+    _pattern_features_service:
+        Args:
+            time: Binary option expiration time.
+        Does forward testing or does data extraction within the specified time interval.
+        Logs the trade details, open and close prices, results, number of trades, and win rate if logging is enabled.
+        Saves extracted features if the logging is disabled.
+
+    """
+
     def _process_candle(self, new_candle, extractor):
         pattern = self.pattern_finder.find_patterns(
             self.candles,

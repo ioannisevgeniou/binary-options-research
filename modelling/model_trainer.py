@@ -8,7 +8,18 @@ from joblib import dump
 np.random.seed(42)
 
 
-# Exhaustive hyper boosting
+"""
+    Defines and trains an XGBoost classifier using hyper-parameters and 
+    evaluates it on the validation set.
+
+    Args:
+        space (dict): hyperparameters and data containing dict for training and validation.
+
+    Returns:
+        dict: negative accuracy loss and status containing dict.
+"""
+
+
 def objective(space):
     model = xgb.XGBClassifier(
         n_jobs=-1,
@@ -46,7 +57,18 @@ def objective(space):
     return {"loss": -round(accuracy, 3), "status": STATUS_OK}
 
 
-# Find hyper params of model
+"""
+    This function returns the best hyper-parameters for the XGBoost
+    from given training and the validation data using Hyperopt.
+
+    Args:
+    - X_train: contain data for training features.
+    - y_train: contain data for training targets.
+    - X_valid: containdata for validation features.
+    - y_valid: contain data for validation target.
+"""
+
+
 def find_hyper_params(X_train, y_train, X_valid, y_valid):
 
     space = {
@@ -105,7 +127,23 @@ def find_hyper_params(X_train, y_train, X_valid, y_valid):
     print("\n")
 
 
-# Train the model with hyper params
+"""
+    This function fits XGBoost on given training using relevent hyperparameters, 
+    then evaluates model prior saving that to a file.
+
+
+    Args:
+    - X_train: contain data for training features.
+    - y_train: contain data for training target.
+    - X_valid: contain data for validation features
+    - y_valid: contain data for validation target.
+    - X_test: contain data for test features.
+    - y_test: contain data for test target
+    - hyper: hyperparameters dict
+    - pattern: String pattern for using filename while model is saved.
+"""
+
+
 def fit_model(X_train, y_train, X_valid, y_valid, X_test, y_test, hyper, pattern):
     space = {
         "base_score": [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95],
@@ -196,7 +234,20 @@ def fit_model(X_train, y_train, X_valid, y_valid, X_test, y_test, hyper, pattern
     )
 
 
-# Get some fit statistics
+"""
+    Compute and print different essential performance metrics.
+
+    Args:
+    - X_train: contain data for training features.
+    - y_train: contain data for training target.
+    - X_valid: contain data for validation features.
+    - y_valid: contain data for validation target.
+    - X_test: contain data for test features.
+    - y_test: contain data for test target.
+    - model: Trained model.
+"""
+
+
 def statistics(X_train, y_train, X_valid, y_valid, X_test, y_test, model):
     train_accuracy = model.score(X_train, y_train)
 
