@@ -30,13 +30,16 @@ class Extractor:
     def _extract_features(
         self, pattern_name, start, reversal1, msb, reversal2, end, extract
     ):
+        # Create a dictionary to store extracted features for the given candlestick pattern
         observation = {
+            # Name of pattern and times of pattern points
             "pattern": pattern_name,
             "open_time_start": start["open_time"],
             "open_time_reversal1": reversal1["open_time"],
             "open_time_msb": msb["open_time"],
             "open_time_reversal2": reversal2["open_time"],
             "open_time_end": end["open_time"],
+            # Calculate indicators concerning the pattern
             "reversal_difference": abs(reversal1["close"] - reversal2["close"])
             / ((reversal1["close"] + reversal2["close"]) / 2)
             * 100,
@@ -71,6 +74,7 @@ class Extractor:
                 if pattern_name == "Double Bottom"
                 else reversal2["close"] > reversal1["close"]
             ),
+            # Include various indicators' values at different points in the pattern
             "rsi_reversal1": reversal1["rsi"],
             "rsi_reversal2": reversal2["rsi"],
             "rsi_start": start["rsi"],
@@ -96,11 +100,13 @@ class Extractor:
             "adx_start": start["adx"],
             "adx_msb": msb["adx"],
             "adx_end": end["adx"],
+            # PSAR (Parabolic SAR) indicator values
             "psar_reversal1": (1 if reversal1["psar"] < reversal1["open"] else 0),
             "psar_reversal2": (1 if reversal2["psar"] < reversal2["open"] else 0),
             "psar_start": 1 if start["psar"] < start["open"] else 0,
             "psar_msb": 1 if msb["psar"] < msb["open"] else 0,
             "psar_end": 1 if end["psar"] < end["open"] else 0,
+            # Short-term EMA (Exponential Moving Average) indicators
             "short_term_ema_reversal1": (
                 1 if reversal1["short_term_ema"] < reversal1["close"] else 0
             ),
@@ -112,6 +118,7 @@ class Extractor:
             ),
             "short_term_ema_msb": 1 if msb["short_term_ema"] < msb["close"] else 0,
             "short_term_ema_end": 1 if end["short_term_ema"] < end["close"] else 0,
+            # Medium-term EMA indicators
             "medium_term_ema_reversal1": (
                 1 if reversal1["medium_term_ema"] < reversal1["close"] else 0
             ),
@@ -123,6 +130,7 @@ class Extractor:
             ),
             "medium_term_ema_msb": 1 if msb["medium_term_ema"] < msb["close"] else 0,
             "medium_term_ema_end": 1 if end["medium_term_ema"] < end["close"] else 0,
+            # Supertrend indicator values
             "long_super_reversal1": long_supertrends_count(reversal1),
             "long_super_reversal2": long_supertrends_count(reversal2),
             "long_super_start": long_supertrends_count(start),
@@ -133,6 +141,7 @@ class Extractor:
             "short_super_start": short_supertrends_count(start),
             "short_super_msb": short_supertrends_count(msb),
             "short_super_end": short_supertrends_count(end),
+            # Calculate the absolute differences in candlestick bodies and wicks
             "difference_body_start": abs(start["close"] - start["open"]),
             "difference_body_reversal1": abs(reversal1["close"] - reversal1["open"]),
             "difference_body_reversal2": abs(reversal2["close"] - reversal2["open"]),
@@ -145,8 +154,10 @@ class Extractor:
             "difference_wick_end": abs(end["high"] - end["low"]),
         }
 
+        # If extract is True, add the observation to the list of observations
         if extract:
             self.observations.append(observation)
+        # If extract is False, remove time-related fields before returning the observation
         else:
             del observation["open_time_start"]
             del observation["open_time_reversal1"]

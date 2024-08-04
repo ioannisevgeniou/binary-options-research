@@ -5,6 +5,7 @@ from talipp.indicators import ATR, RSI
 from talipp.ohlcv import OHLCVFactory
 from dataset.candle_utils import is_green
 
+# Constants defining various indicator intervals
 EMA_LENGTHS = {
     "SHORT_TERM": 50,
     "MEDIUM_TERM": 200,
@@ -35,6 +36,7 @@ PSAR = {"AF0": 0.02, "AF": 0.02, "MAX_AF": 0.2}
 
 
 class IndicatorsTracker:
+    # Initialize the IndicatorsTracker with candlestick data
     def __init__(self, candles) -> None:
         self.rsis = RSI(RSI_LENGTH, candles.close.tolist())
         ohlcv = OHLCVFactory.from_matrix2(
@@ -64,7 +66,10 @@ class IndicatorsTracker:
     """
 
     def calculate_indicators_for_new_candle(self, candles, new_candle, last_candle):
+        # Select the last 3500 candles for EMA calculation
         last_3500 = candles.iloc[-3500:]
+
+        # Calculate EMAs for short, medium, and long terms
         new_candle.short_term_ema = self.calculate_ema_for_new_candle(
             last_3500, EMA_LENGTHS["SHORT_TERM"]
         )
@@ -75,7 +80,10 @@ class IndicatorsTracker:
             last_3500, EMA_LENGTHS["LONG_TERM"]
         )
 
+        # Calculate RSI for the new candle
         new_candle.rsi = self.calculate_rsi_for_new_candle(new_candle)
+
+        # Select the last 100 candles for ATR calculation
         last_100 = candles.iloc[-100:]
         new_candle["atr"] = (
             ta.atr(last_100.high, last_100.low, last_100.close, length=ATR_LENGTH)
@@ -83,17 +91,22 @@ class IndicatorsTracker:
             .iloc[-1]
         )
 
+        # Calculate the True Range for the new candle
         new_candle["tr"] = self.tr_for_candle(new_candle, last_candle)
 
+        # Calculate ATRs for different periods
         new_candle["atr_12"] = self.atr_for_new_candle(new_candle, candles, 12)
         new_candle["atr_11"] = self.atr_for_new_candle(new_candle, candles, 11)
         new_candle["atr_10"] = self.atr_for_new_candle(new_candle, candles, 10)
 
+        # Initialize local maximum and minimum flags
         new_candle["is_local_maximum"] = False
         new_candle["is_local_minimum"] = False
 
+        # Calculate supertrends for the new candle
         self.supertrends_for_new_candle(new_candle, last_candle)
 
+        # Select the last 20 candles for CMF calculation
         last_20 = candles.iloc[-20:]
         new_candle["cmf"] = (
             ta.cmf(
@@ -106,12 +119,16 @@ class IndicatorsTracker:
             .round(2)
             .iloc[-1]
         )
+
+        # Select the last 30 candles for CCI calculation
         last_30 = candles.iloc[-30:]
         new_candle["cci"] = (
             ta.cci(last_30.high, last_30.low, last_30.close, length=CCI_LENGTH)
             .round(2)
             .iloc[-1]
         )
+
+        # Select the last 500 candles for ADX calculation
         last_500 = candles.iloc[-500:]
         new_candle["adx"] = (
             ta.adx(last_500.high, last_500.low, last_500.close, length=ADX_LENGTH)[
@@ -120,6 +137,8 @@ class IndicatorsTracker:
             .round(2)
             .iloc[-1]
         )
+
+        # Select the last 1000 candles for MA and Bollinger Bands calculations
         last_1000 = candles.iloc[-1000:]
         new_candle.short_term_ma = self.calculate_ma_for_new_candle(
             last_1000, MA_LENGTHS["SHORT_TERM"]
@@ -130,6 +149,8 @@ class IndicatorsTracker:
         new_candle.long_term_ma = self.calculate_ma_for_new_candle(
             last_1000, MA_LENGTHS["LONG_TERM"]
         )
+
+        # Calculate Stochastic RSI for the new candle
         stochrsi = ta.stochrsi(
             last_100.close,
             length=STOCHRSI["LENGTH"],
@@ -151,6 +172,8 @@ class IndicatorsTracker:
             .round(2)
             .iloc[-1]
         )
+
+        # Calculate MACD for the new candle
         macd = ta.macd(
             last_100.close, fast=MACD["FAST"], slow=MACD["SLOW"], signal=MACD["SIGNAL"]
         )
@@ -169,6 +192,8 @@ class IndicatorsTracker:
             .round(2)
             .iloc[-1]
         )
+
+        # Calculate Bollinger Bands for the new candle
         bbands = ta.bbands(last_1000.close, length=BBANDS["LENGTH"])
         new_candle["bbands_lower"] = (
             bbands[f"BBL_{BBANDS['LENGTH']}_{BBANDS['STD']}"].round(2).iloc[-1]
@@ -185,6 +210,8 @@ class IndicatorsTracker:
         new_candle["bbands_percent"] = (
             bbands[f"BBP_{BBANDS['LENGTH']}_{BBANDS['STD']}"].round(2).iloc[-1]
         )
+
+        # Calculate Ichimoku indicators for the new candle
         ichimoku = ta.ichimoku(
             last_1000.high,
             last_1000.low,
@@ -205,6 +232,8 @@ class IndicatorsTracker:
         new_candle["ichimoku_kijun"] = (
             ichimoku[0][f"IKS_{ICHIMOKU['KIJUN']}"].round(2).iloc[-1]
         )
+
+        # Select the last 4500 candles for PSAR calculation
         last_4500 = candles.iloc[-4500:]
         psar = ta.psar(
             last_4500.high,
@@ -233,6 +262,7 @@ class IndicatorsTracker:
     """
 
     def calculate_local_maxima_for_last_candle(self, candles, last_candle, new_candle):
+        # Determine if the last candle is a local maximum or minimum
         candles.loc[last_candle.name, "is_local_maximum"] = not is_green(
             new_candle
         ) and is_green(last_candle)
@@ -243,15 +273,15 @@ class IndicatorsTracker:
 
         return last_candle
 
-    # Function to calculate ema of candle
+    # Function to calculate EMA for the new candle
     def calculate_ema_for_new_candle(self, candles, period):
         return ta.ema(candles.close, length=period).round(2).iloc[-1]
 
-    # Function to calculate ma of candle
+    # Function to calculate MA for the new candle
     def calculate_ma_for_new_candle(self, candles, period):
         return ta.sma(candles.close, length=period).round(2).iloc[-1]
 
-    # Function to calculate rsi of candle
+    # Function to calculate RSI for the new candle
     def calculate_rsi_for_new_candle(self, new_candle):
         self.rsis.add_input_value(new_candle.close)
         return round(self.rsis[-1], 2)
@@ -271,6 +301,7 @@ class IndicatorsTracker:
     """
 
     def calculate_atr_for_new_candle(self, new_candle, period):
+        # Add input value and return the ATR for the specified period
         if period == 12:
             self.atrs_12.add_input_value(new_candle)
             return self.atrs_12[-1]
@@ -369,6 +400,7 @@ class IndicatorsTracker:
             hl2 = (new_candle["high"] + new_candle["low"]) / 2
             new_candle[in_uptrend] = True
 
+            # Calculate upperband and lowerband
             new_candle[upperband] = (
                 hl2 + (multiplier * new_candle[f"atr_{period}"])
             ).round(2)
@@ -376,6 +408,7 @@ class IndicatorsTracker:
                 hl2 - (multiplier * new_candle[f"atr_{period}"])
             ).round(2)
 
+            # Determine in_uptrend status
             if new_candle["close"] > last_candle[upperband]:
                 new_candle[in_uptrend] = True
             elif new_candle["close"] < last_candle[lowerband]:
@@ -383,18 +416,21 @@ class IndicatorsTracker:
             else:
                 new_candle[in_uptrend] = last_candle[in_uptrend]
 
+            # Adjust lowerband if necessary
             if (
                 new_candle[lowerband] < last_candle[lowerband]
                 and last_candle["close"] > last_candle[lowerband]
             ):
                 new_candle[lowerband] = last_candle[lowerband]
 
+            # Adjust upperband if necessary
             if (
                 new_candle[upperband] > last_candle[upperband]
                 and last_candle["close"] < last_candle[upperband]
             ):
                 new_candle[upperband] = last_candle[upperband]
 
+            # Set supertrend based on in_uptrend status
             if new_candle[in_uptrend]:
                 new_candle[supert] = round(new_candle[lowerband], 2)
             else:

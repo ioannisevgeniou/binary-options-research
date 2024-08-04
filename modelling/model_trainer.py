@@ -5,6 +5,7 @@ from hyperopt import STATUS_OK, Trials, fmin, hp, tpe
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 from joblib import dump
 
+# Set random seed for reproducibility
 np.random.seed(42)
 
 
@@ -21,6 +22,7 @@ np.random.seed(42)
 
 
 def objective(space):
+    # Initialize the XGBoost classifier with given hyperparameters
     model = xgb.XGBClassifier(
         n_jobs=-1,
         random_state=42,
@@ -44,6 +46,7 @@ def objective(space):
         early_stopping_rounds=100,
     )
 
+    # Train the model on the training data and evaluate on the validation set
     model.fit(
         space["X_train"],
         space["y_train"],
@@ -51,9 +54,11 @@ def objective(space):
         verbose=False,
     )
 
+    # Predict on the validation data and calculate accuracy
     y_pred = model.predict(space["X_valid"])
     accuracy = accuracy_score(space["y_valid"], y_pred)
 
+    # Return the negative accuracy as the loss to be minimized
     return {"loss": -round(accuracy, 3), "status": STATUS_OK}
 
 
@@ -71,6 +76,7 @@ def objective(space):
 
 def find_hyper_params(X_train, y_train, X_valid, y_valid):
 
+    # Define the search space for hyperparameters
     space = {
         "base_score": hp.choice(
             "base_score", [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95]
@@ -115,6 +121,7 @@ def find_hyper_params(X_train, y_train, X_valid, y_valid):
         "y_valid": y_valid,
     }
 
+    # Use Hyperopt to find the best hyperparameters
     best_hyperparams = fmin(
         fn=objective,
         space=space,
@@ -145,6 +152,7 @@ def find_hyper_params(X_train, y_train, X_valid, y_valid):
 
 
 def fit_model(X_train, y_train, X_valid, y_valid, X_test, y_test, hyper, pattern):
+    # Define the search space for hyperparameters
     space = {
         "base_score": [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95],
         "scale_pos_weight": [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1],
@@ -196,6 +204,7 @@ def fit_model(X_train, y_train, X_valid, y_valid, X_test, y_test, hyper, pattern
         "gamma": [0, 0.01, 0.1, 1, 10, 100],
     }
 
+    # Initialize the XGBoost classifier with selected hyperparameters
     model = xgb.XGBClassifier(
         n_jobs=-1,
         random_state=42,
@@ -219,6 +228,7 @@ def fit_model(X_train, y_train, X_valid, y_valid, X_test, y_test, hyper, pattern
         early_stopping_rounds=100,
     )
 
+    # Train the model on the training data and evaluate on the validation set
     model.fit(
         X_train,
         y_train,
@@ -226,8 +236,10 @@ def fit_model(X_train, y_train, X_valid, y_valid, X_test, y_test, hyper, pattern
         verbose=False,
     )
 
+    # Calculate and print statistics
     statistics(X_train, y_train, X_valid, y_valid, X_test, y_test, model)
 
+    # Save the trained model to a file
     dump(
         model,
         "modelling/" + pattern + ".joblib",
@@ -249,23 +261,26 @@ def fit_model(X_train, y_train, X_valid, y_valid, X_test, y_test, hyper, pattern
 
 
 def statistics(X_train, y_train, X_valid, y_valid, X_test, y_test, model):
+    # Calculate training accuracy
     train_accuracy = model.score(X_train, y_train)
 
+    # Predict and calculate validation accuracy
     y_pred = model.predict(X_valid)
     valid_accuracy = accuracy_score(y_valid, y_pred)
 
+    # Predict and calculate test accuracy
     y_pred = model.predict(X_test)
     test_accuracy = accuracy_score(y_test, y_pred)
 
+    # Compute confusion matrix and classification report for test data
     matrix = confusion_matrix(y_test, y_pred)
     report = classification_report(y_test, y_pred, labels=[0, 1], zero_division=1)
 
+    # Print performance metrics
     print("Training Accuracy: %.3f" % train_accuracy)
     print("Valid Accuracy: %.3f" % valid_accuracy)
     print("Testing Accuracy: %.3f" % test_accuracy)
-
     print("Confusion Matrix:")
     print(matrix)
-
     print("Classification Statistics:")
     print(report)

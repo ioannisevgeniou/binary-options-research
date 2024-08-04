@@ -17,9 +17,9 @@ initialiaze_dataset:
 
 
 def initialiaze_dataset(candles):
-    format_times(candles)
-    candles = format_dataset(candles)
-    candles = calculate_indicators(candles)
+    format_times(candles)  # Convert time columns to datetime format
+    candles = format_dataset(candles)  # Format dataset columns
+    candles = calculate_indicators(candles)  # Calculate technical indicators
     return candles
 
 
@@ -54,83 +54,80 @@ format_dataset:
 
 
 def format_dataset(candles):
+    # Convert OHLCV columns to float
     candles.open = candles.open.astype(float)
     candles.high = candles.high.astype(float)
     candles.low = candles.low.astype(float)
     candles.close = candles.close.astype(float)
     candles.volume = candles.volume.astype(float)
 
+    # Initialize indicator columns if specified lengths are present
     if indicators_tracker.EMA_LENGTHS["SHORT_TERM"]:
         candles["short_term_ema"] = None
     if indicators_tracker.EMA_LENGTHS["MEDIUM_TERM"]:
         candles["medium_term_ema"] = None
     if indicators_tracker.EMA_LENGTHS["LONG_TERM"]:
         candles["long_term_ema"] = None
-
     if indicators_tracker.RSI_LENGTH:
         candles["rsi"] = None
-
     if indicators_tracker.ATR_LENGTH:
         candles["atr"] = None
 
+    # Initialize True Range and ATR columns
     candles["tr"] = None
     candles["atr_12"] = None
     candles["atr_11"] = None
     candles["atr_10"] = None
+
+    # Initialize local maximum and minimum columns
     candles["is_local_maximum"] = None
     candles["is_local_minimum"] = None
 
+    # Initialize supertrend columns for various ATR periods and multipliers
     candles["in_uptrend_12_3"] = None
     candles["upperband_12_3"] = None
     candles["lowerband_12_3"] = None
     candles["supert_12_3"] = None
-
     candles["in_uptrend_11_2"] = None
     candles["upperband_11_2"] = None
     candles["lowerband_11_2"] = None
     candles["supert_11_2"] = None
-
     candles["in_uptrend_10_1"] = None
     candles["upperband_10_1"] = None
     candles["lowerband_10_1"] = None
     candles["supert_10_1"] = None
 
+    # Initialize other indicator columns based on specified lengths
     if indicators_tracker.CMF_LENGTH:
         candles["cmf"] = None
     if indicators_tracker.CCI_LENGTH:
         candles["cci"] = None
     if indicators_tracker.ADX_LENGTH:
         candles["adx"] = None
-
     if indicators_tracker.MA_LENGTHS["SHORT_TERM"]:
         candles["short_term_ma"] = None
     if indicators_tracker.MA_LENGTHS["MEDIUM_TERM"]:
         candles["medium_term_ma"] = None
     if indicators_tracker.MA_LENGTHS["LONG_TERM"]:
         candles["long_term_ma"] = None
-
     if indicators_tracker.STOCHRSI["LENGTH"]:
         candles["stochrsi_k"] = None
         candles["stochrsi_d"] = None
-
     if indicators_tracker.MACD["FAST"]:
         candles["macd"] = None
         candles["macd_histogram"] = None
         candles["macd_signal"] = None
-
     if indicators_tracker.BBANDS["LENGTH"]:
         candles["bbands_lower"] = None
         candles["bbands_mid"] = None
         candles["bbands_upper"] = None
         candles["bbands_bandwidth"] = None
         candles["bbands_percent"] = None
-
     if indicators_tracker.ICHIMOKU["TENKAN"]:
         candles["ichimoku_span_a"] = None
         candles["ichimoku_span_b"] = None
         candles["ichimoku_tenkan"] = None
         candles["ichimoku_kijun"] = None
-
     if indicators_tracker.PSAR["AF0"]:
         candles["psar"] = None
 
@@ -188,6 +185,7 @@ calculate_indicators:
 
 
 def calculate_indicators(candles):
+    # Compute EMAs for different terms
     create_ema_column(
         candles, "short_term_ema", indicators_tracker.EMA_LENGTHS["SHORT_TERM"]
     )
@@ -198,11 +196,13 @@ def calculate_indicators(candles):
         candles, "long_term_ema", indicators_tracker.EMA_LENGTHS["LONG_TERM"]
     )
 
+    # Compute RSI
     if indicators_tracker.RSI_LENGTH:
         candles.rsi = ta.rsi(candles.close, length=indicators_tracker.RSI_LENGTH).round(
             2
         )
 
+    # Compute ATR
     if indicators_tracker.ATR_LENGTH:
         candles["atr"] = ta.atr(
             candles.high,
@@ -213,17 +213,21 @@ def calculate_indicators(candles):
 
     candles_copy = candles.copy(deep=True)
 
+    # Compute True Range and ATR for different periods
     candles["tr"] = tr(candles_copy)
     candles["atr_12"] = atr(candles_copy, 12)
     candles["atr_11"] = atr(candles_copy, 11)
     candles["atr_10"] = atr(candles_copy, 10)
 
+    # Compute local maxima and minima
     maxima = local_maxima(candles_copy)
     candles["is_local_maximum"] = maxima[0]
     candles["is_local_minimum"] = maxima[1]
 
+    # Compute supertrends
     supertrends(candles)
 
+    # Compute CMF
     if indicators_tracker.CMF_LENGTH:
         candles["cmf"] = ta.cmf(
             candles.high,
@@ -233,6 +237,7 @@ def calculate_indicators(candles):
             length=indicators_tracker.CMF_LENGTH,
         ).round(2)
 
+    # Compute CCI
     if indicators_tracker.CCI_LENGTH:
         candles["cci"] = ta.cci(
             candles.high,
@@ -241,6 +246,7 @@ def calculate_indicators(candles):
             length=indicators_tracker.CCI_LENGTH,
         ).round(2)
 
+    # Compute ADX
     if indicators_tracker.ADX_LENGTH:
         candles["adx"] = ta.adx(
             candles.high,
@@ -249,6 +255,7 @@ def calculate_indicators(candles):
             length=indicators_tracker.ADX_LENGTH,
         )[f"ADX_{indicators_tracker.ADX_LENGTH}"].round(2)
 
+    # Compute MAs for different terms
     create_ma_column(
         candles, "short_term_ma", indicators_tracker.MA_LENGTHS["SHORT_TERM"]
     )
@@ -259,6 +266,7 @@ def calculate_indicators(candles):
         candles, "long_term_ma", indicators_tracker.MA_LENGTHS["LONG_TERM"]
     )
 
+    # Compute Stochastic RSI
     if indicators_tracker.STOCHRSI["LENGTH"]:
         stochrsi = ta.stochrsi(
             candles.close,
@@ -274,6 +282,7 @@ def calculate_indicators(candles):
             f"STOCHRSId_{indicators_tracker.STOCHRSI['LENGTH']}_{indicators_tracker.STOCHRSI['RSI_LENGTH']}_{indicators_tracker.STOCHRSI['K']}_{indicators_tracker.STOCHRSI['D']}"
         ].round(2)
 
+    # Compute MACD
     if indicators_tracker.MACD["FAST"]:
         macd = ta.macd(
             candles.close,
@@ -291,6 +300,7 @@ def calculate_indicators(candles):
             f"MACDs_{indicators_tracker.MACD['FAST']}_{indicators_tracker.MACD['SLOW']}_{indicators_tracker.MACD['SIGNAL']}"
         ].round(2)
 
+    # Compute Bollinger Bands
     if indicators_tracker.BBANDS["LENGTH"]:
         bbands = ta.bbands(candles.close, length=indicators_tracker.BBANDS["LENGTH"])
         candles["bbands_lower"] = bbands[
@@ -313,6 +323,7 @@ def calculate_indicators(candles):
             f"BBP_{indicators_tracker.BBANDS['LENGTH']}_{indicators_tracker.BBANDS['STD']}"
         ].round(2)
 
+    # Compute ichimoku indicators
     if indicators_tracker.ICHIMOKU["TENKAN"]:
         ichimoku = ta.ichimoku(
             candles.high,
@@ -322,7 +333,6 @@ def calculate_indicators(candles):
             kijun=indicators_tracker.ICHIMOKU["KIJUN"],
             senkou=indicators_tracker.ICHIMOKU["SENKOU"],
         )
-
         candles["ichimoku_span_a"] = ichimoku[0][
             f"ISA_{indicators_tracker.ICHIMOKU['TENKAN']}"
         ].round(2)
@@ -336,6 +346,7 @@ def calculate_indicators(candles):
             f"IKS_{indicators_tracker.ICHIMOKU['KIJUN']}"
         ].round(2)
 
+    # Compute PSAR
     if indicators_tracker.PSAR["AF0"]:
         psar = ta.psar(
             candles.high,
@@ -453,6 +464,7 @@ def supertrend(df, period=7, atr_multiplier=3):
     df["lowerband"] = hl2 - (atr_multiplier * df["atr"])
     df["in_uptrend"] = True
 
+    # Calculate supertrend status based on ATR and price bands
     for index, _ in df.iloc[1:].iterrows():
         current = df.loc[index].name
         previous = current - 1
@@ -513,6 +525,7 @@ def supertrends(df):
     atr_periods = [12, 11, 10]
     multipliers = [3, 2, 1]
 
+    # Calculate supertrend status for each period and multiplier
     for period, multiplier in zip(atr_periods, multipliers):
         atr_period = f"atr_{period}"
 
@@ -588,6 +601,7 @@ def supertrends_for_new_candle(df):
         df[f"lowerband_{period}_{multiplier}"] = hl2 - (multiplier * df[atr_period])
         df[f"in_uptrend_{period}_{multiplier}"] = True
 
+    # Calculate supertrend status for the new candlestick
     for index, row in df.iloc[1:].iterrows():
         current = df.loc[index].name
         previous = current - 1

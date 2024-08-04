@@ -17,17 +17,18 @@ from .pattern_name import PatternName
 
 
 class DoubleExtreme:
-
+    # Initialize the DoubleExtreme object with the provided pattern information
     def __init__(
         self, pattern_name: PatternName, start, reversal1, msb, reversal2, end
     ) -> None:
-        self.pattern_name = pattern_name
-        self.start = start
-        self.reversal1 = reversal1
-        self.msb = msb
-        self.reversal2 = reversal2
-        self.end = end
+        self.pattern_name = pattern_name  # The name of the pattern
+        self.start = start  # The starting candlestick of the pattern
+        self.reversal1 = reversal1  # The first reversal candlestick
+        self.msb = msb  # The middle significant point candlestick
+        self.reversal2 = reversal2  # The second reversal candlestick
+        self.end = end  # The ending candlestick of the pattern
 
+    # String representation of the DoubleExtreme object
     def __str__(self) -> str:
         return (
             f"{self.pattern_name.value}\n"

@@ -26,7 +26,7 @@ from modelling.model_caller import predict
 class DoubleBottomFinder:
 
     def __init__(self) -> None:
-        self.search_end = 0
+        self.search_end = 0  # Initialize the search end boundary for pattern finding
 
     def find_double_bottom(
         self,
@@ -36,20 +36,26 @@ class DoubleBottomFinder:
         logging,
         model_db,
     ) -> Optional[DoubleExtreme]:
+        # Initialize the pattern components
         end = current
         reversal2 = None
         msb = None
         reversal1 = None
         start = None
 
+        # If the current (end) candle is red, exit early as it doesn't fit the pattern
         if is_red(end):
             return None
 
+        # Iterate backwards through the candles from the current candle to search_end
         for i in range(end.name - 1, self.search_end, -1):
             candle = candles.iloc[i]
 
+            # If a green candle closes above the end, it's invalid for the pattern
             if is_green(candle) and candle["close"] > end["close"]:
                 return None
+
+            # Identify reversal2
             if msb is None:
                 if (
                     is_red(candle)
@@ -62,6 +68,7 @@ class DoubleBottomFinder:
                 ):
                     reversal2 = candle
 
+            # Identify the middle of the swing bottom (MSB)
             if reversal1 is None and reversal2 is not None:
                 if (
                     is_green(candle)
@@ -75,6 +82,8 @@ class DoubleBottomFinder:
                     ]["close"]
                 ):
                     msb = candle
+
+            # Identify reversal1
             if msb is not None:
                 if (
                     (reversal1 is None or candle["close"] < reversal1["close"])
@@ -88,6 +97,7 @@ class DoubleBottomFinder:
                 ):
                     reversal1 = candle
 
+            # Identify the start of the pattern
             if (
                 reversal1 is not None
                 and is_red(candle)
@@ -100,9 +110,11 @@ class DoubleBottomFinder:
             ):
                 start = candle
 
+                # Load the prediction model if logging is enabled and model exists
                 model = None
                 if logging and model_db is not None:
                     model = load("modelling/" + model_db + ".joblib")
+                # Extract features for further processing if no model is used
                 else:
                     extractor._extract_features(
                         PatternName.DOUBLE_BOTTOM.value,
@@ -114,6 +126,7 @@ class DoubleBottomFinder:
                         1,
                     )
 
+                # Predict the validity of the pattern
                 if predict(model, start, reversal1, msb, reversal2, end, logging):
                     return DoubleExtreme(
                         PatternName.DOUBLE_BOTTOM, start, reversal1, msb, reversal2, end

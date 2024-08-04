@@ -22,10 +22,10 @@ from .double_top_finder import DoubleTopFinder
 
 
 class PatternFinder:
-
+    # Initialize pattern finders for double bottom and double top
     def __init__(self) -> None:
-        self.db_finder = DoubleBottomFinder()
-        self.dt_finder = DoubleTopFinder()
+        self.db_finder = DoubleBottomFinder()  # Double bottom pattern finder
+        self.dt_finder = DoubleTopFinder()  # Double top pattern finder
 
     def find_patterns(
         self,
@@ -36,12 +36,14 @@ class PatternFinder:
         model_db,
         model_dt,
     ):
+        # Attempt to find a double bottom pattern
         db = self.db_finder.find_double_bottom(
             candles, new_candle, extractor, logging, model_db
         )
         if db:
             return db
 
+        # Attempt to find a double top pattern
         dt = self.dt_finder.find_double_top(
             candles, new_candle, extractor, logging, model_dt
         )

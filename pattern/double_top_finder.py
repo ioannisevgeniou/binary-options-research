@@ -27,7 +27,7 @@ from modelling.model_caller import predict
 class DoubleTopFinder:
 
     def __init__(self) -> None:
-        self.search_end = 0
+        self.search_end = 0  # Initialize the search end boundary for pattern finding
 
     def find_double_top(
         self,
@@ -37,20 +37,26 @@ class DoubleTopFinder:
         logging,
         model_dt,
     ) -> Optional[DoubleExtreme]:
+        # Initialize the pattern components
         end = current
         reversal2 = None
         msb = None
         reversal1 = None
         start = None
 
+        # If the current (end) candle is green, exit early as it doesn't fit the pattern
         if is_green(end):
             return None
 
+        # Iterate backwards through the candles from the current candle to search_end
         for i in range(end.name - 1, self.search_end, -1):
             candle = candles.iloc[i]
 
+            # If a red candle closes above the end, it's invalid for the pattern
             if is_red(candle) and candle["close"] < end["close"]:
                 return None
+
+            # Identify reversal2
             if msb is None:
                 if (
                     is_green(candle)
@@ -63,6 +69,7 @@ class DoubleTopFinder:
                 ):
                     reversal2 = candle
 
+            # Identify msb
             if reversal1 is None and reversal2 is not None:
                 if (
                     is_red(candle)
@@ -76,6 +83,8 @@ class DoubleTopFinder:
                     ]["close"]
                 ):
                     msb = candle
+
+            # Identify reversal1
             if msb is not None:
                 if (
                     (reversal1 is None or candle["close"] > reversal1["close"])
@@ -89,6 +98,7 @@ class DoubleTopFinder:
                 ):
                     reversal1 = candle
 
+            # Identify start candle
             if (
                 reversal1 is not None
                 and is_green(candle)
@@ -101,9 +111,11 @@ class DoubleTopFinder:
             ):
                 start = candle
 
+                # Load the prediction model if logging is enabled and model exists
                 model = None
                 if logging and model_dt is not None:
                     model = load("modelling/" + model_dt + ".joblib")
+                # Extract features for further processing if no model is used
                 else:
                     extractor._extract_features(
                         PatternName.DOUBLE_TOP.value,
@@ -115,6 +127,7 @@ class DoubleTopFinder:
                         1,
                     )
 
+                # Predict the validity of the pattern
                 if predict(model, start, reversal1, msb, reversal2, end, logging):
                     return DoubleExtreme(
                         PatternName.DOUBLE_TOP, start, reversal1, msb, reversal2, end

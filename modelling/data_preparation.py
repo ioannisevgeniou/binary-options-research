@@ -14,11 +14,14 @@ from numpy import loadtxt, savetxt
 
 
 def split_data(df):
+    # Drop any rows with missing values and reset the index
     df = df.dropna().reset_index(drop=True)
 
+    # Convert boolean columns to integers (0 or 1)
     for col in df.select_dtypes(include="bool").columns:
         df[col] = df[col].astype(int)
 
+    # Separate features (X) and target (y)
     X = df.drop(
         columns=[
             "result",
@@ -32,6 +35,7 @@ def split_data(df):
     )
     y = df["result"]
 
+    # Split data into training (80%), testing (10%) and validation (10%) sets
     X_train, X_temp, y_train, y_temp = train_test_split(
         X, y, train_size=0.8, random_state=42
     )
@@ -57,6 +61,7 @@ def split_data(df):
 
 
 def save_data(X_train, y_train, X_valid, y_valid, X_test, y_test):
+    # Save each dataset to a CSV file using numpy's savetxt function
     savetxt("modelling/X_train.csv", X_train, delimiter=",", fmt="%.3f")
     savetxt("modelling/y_train.csv", y_train, delimiter=",", fmt="%i")
     savetxt("modelling/X_valid.csv", X_valid, delimiter=",", fmt="%.3f")
@@ -74,6 +79,7 @@ def save_data(X_train, y_train, X_valid, y_valid, X_test, y_test):
 
 
 def load_data():
+    # Load each dataset from a CSV file using numpy's loadtxt function
     X_train = loadtxt("modelling/X_train.csv", delimiter=",")
     y_train = loadtxt("modelling/y_train.csv", delimiter=",")
     X_valid = loadtxt("modelling/X_valid.csv", delimiter=",")
